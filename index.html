@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monarch High School - Senior Countdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #FFD700;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            width: 50px;
+            height: 50px;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 215, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .graduation-card {
+            grid-column: 1 / -1;
+        }
+
+        .countdown-card {
+            background: rgba(255, 215, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .countdown-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .countdown-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .countdown-display {
+            text-align: center;
+        }
+
+        .time-section {
+            display: inline-block;
+            margin: 10px 15px;
+        }
+
+        .time-number {
+            font-size: 3em;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .time-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .days-only {
+            font-size: 4em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .exclusions-section {
+            background: rgba(255, 215, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #FFC700;
+            transform: rotate(90deg);
+        }
+
+        .exclusions-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .exclusion-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="date"] {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        button {
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            background: #FFD700;
+            color: #000;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #FFC700;
+            border-color: #FFC700;
+            transform: scale(1.05);
+        }
+
+        .clear-btn {
+            background: #000;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .clear-btn:hover {
+            background: #1a1a1a;
+        }
+
+        .exclusion-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .exclusion-tag {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .remove-btn {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: #FFC700;
+            transform: scale(1.1);
+        }
+
+        .info-box {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px 20px;
+            background: rgba(255, 215, 0, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .disclaimer {
+            font-size: 0.9em;
+            margin: 10px 0;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 0.85em;
+            opacity: 0.7;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .settings-btn {
+                position: static;
+                margin: 20px auto 0;
+            }
+
+            header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .countdown-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .graduation-card {
+                grid-column: 1;
+            }
+
+            .time-number {
+                font-size: 2em;
+            }
+
+            .days-only {
+                font-size: 3em;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="settings-btn" onclick="openSettings()" title="Personal Days Off">
+                ⚙️
+            </button>
+            <h1>🎓 Monarch High School</h1>
+            <div class="subtitle">Senior Class of 2026 - Countdown to Freedom</div>
+        </header>
+
+        <div class="countdown-grid">
+            <div class="countdown-card graduation-card">
+                <div class="countdown-title">⏰ Time Until Graduation</div>
+                <div class="countdown-display" id="graduation-countdown"></div>
+            </div>
+
+            <div class="countdown-card">
+                <div class="countdown-title">📚 Class Days Remaining</div>
+                <div class="days-only" id="class-days">-</div>
+                <div style="text-align: center; opacity: 0.8;">days</div>
+            </div>
+
+            <div class="countdown-card">
+                <div class="countdown-title">🏫 Days Left in Building</div>
+                <div class="days-only" id="building-days">-</div>
+                <div style="text-align: center; opacity: 0.8;">days</div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="disclaimer">
+                <strong>Day counts include today</strong> until 3:55 PM MT
+            </div>
+            <div class="disclaimer">
+                School days are Monday-Friday, excluding holidays and your personal days off.
+            </div>
+            <div class="copyright">
+                Copyright © 2026 Matthew Spratlin
+            </div>
+        </footer>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeSettings()">×</button>
+                <div class="exclusions-title">📅 My Personal Days Off</div>
+                <div class="info-box">
+                    Add days when YOU won't be in school (sick days, appointments, etc.). These will be excluded from your building and class day counts.
+                </div>
+                
+                <div class="exclusion-controls">
+                    <input type="date" id="exclusion-date" />
+                    <button onclick="addExclusion()">Add Day Off</button>
+                    <button class="clear-btn" onclick="clearAllExclusions()">Clear All</button>
+                </div>
+
+                <div class="exclusion-list" id="exclusion-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // School schedule constants (Mountain Time)
+        const GRADUATION_DATE = new Date('2026-05-15T19:00:00-06:00'); // 7:00 PM MT
+        const LAST_CLASS_DAY = new Date('2026-05-13T15:55:00-06:00'); // 3:55 PM MT
+        const SCHOOL_DAY_START = '08:35'; // 8:35 AM
+        const SCHOOL_DAY_END = '15:55'; // 3:55 PM
+        const SCHOOL_HOLIDAYS = [
+            new Date('2026-04-14'),
+            new Date('2026-04-15')
+        ];
+
+        // Local storage key
+        const STORAGE_KEY = 'monarch_exclusion_dates';
+
+        // Load exclusions from localStorage
+        function loadExclusions() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // Save exclusions to localStorage
+        function saveExclusions(exclusions) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(exclusions));
+        }
+
+        // Add a new exclusion date
+        function addExclusion() {
+            const dateInput = document.getElementById('exclusion-date');
+            const dateValue = dateInput.value;
+            
+            if (!dateValue) {
+                alert('Please select a date');
+                return;
+            }
+
+            const exclusions = loadExclusions();
+            
+            // Check if date already exists
+            if (exclusions.includes(dateValue)) {
+                alert('This date is already in your exclusion list');
+                return;
+            }
+
+            exclusions.push(dateValue);
+            exclusions.sort();
+            saveExclusions(exclusions);
+            
+            dateInput.value = '';
+            displayExclusions();
+            updateCountdowns();
+        }
+
+        // Remove an exclusion date
+        function removeExclusion(date) {
+            const exclusions = loadExclusions();
+            const filtered = exclusions.filter(d => d !== date);
+            saveExclusions(filtered);
+            displayExclusions();
+            updateCountdowns();
+        }
+
+        // Clear all exclusions
+        function clearAllExclusions() {
+            if (confirm('Are you sure you want to clear all your personal days off?')) {
+                saveExclusions([]);
+                displayExclusions();
+                updateCountdowns();
+            }
+        }
+
+        // Display exclusion tags
+        function displayExclusions() {
+            const exclusions = loadExclusions();
+            const container = document.getElementById('exclusion-list');
+            
+            if (exclusions.length === 0) {
+                container.innerHTML = '<div style="text-align: center; opacity: 0.7; padding: 20px;">No personal days off added yet</div>';
+                return;
+            }
+
+            container.innerHTML = exclusions.map(date => {
+                const formatted = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                return `
+                    <div class="exclusion-tag">
+                        <span>${formatted}</span>
+                        <button class="remove-btn" onclick="removeExclusion('${date}')" title="Remove">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Check if currently in a school day (before 3:55 PM MT on a school day)
+        function isCurrentlyInSchoolDay() {
+            const now = new Date();
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            
+            // Check if today is a weekday, not a holiday, and not a personal exclusion
+            if (!isWeekday(today) || isSchoolHoliday(today) || isPersonalExclusion(today)) {
+                return false;
+            }
+            
+            // Check if current time is before 3:55 PM MT
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const schoolEndHour = 15;
+            const schoolEndMinute = 55;
+            
+            return (currentHour < schoolEndHour) || 
+                   (currentHour === schoolEndHour && currentMinute < schoolEndMinute);
+        }
+
+        // Check if a date is a weekday (M-F)
+        function isWeekday(date) {
+            const day = date.getDay();
+            return day >= 1 && day <= 5;
+        }
+
+        // Check if date is a school holiday
+        function isSchoolHoliday(date) {
+            return SCHOOL_HOLIDAYS.some(holiday => 
+                date.getFullYear() === holiday.getFullYear() &&
+                date.getMonth() === holiday.getMonth() &&
+                date.getDate() === holiday.getDate()
+            );
+        }
+
+        // Check if date is in personal exclusions
+        function isPersonalExclusion(date) {
+            const exclusions = loadExclusions();
+            const dateStr = date.toISOString().split('T')[0];
+            return exclusions.includes(dateStr);
+        }
+
+        // Count school days between two dates (includes start date if it's before 3:55 PM on a school day)
+        function countSchoolDays(startDate, endDate, includePersonalExclusions = false) {
+            let count = 0;
+            let current = new Date(startDate);
+            current.setHours(0, 0, 0, 0);
+            
+            const end = new Date(endDate);
+            end.setHours(0, 0, 0, 0);
+
+            while (current <= end) {
+                if (isWeekday(current) && 
+                    !isSchoolHoliday(current) &&
+                    (!includePersonalExclusions || !isPersonalExclusion(current))) {
+                    count++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+
+            return count;
+        }
+
+        // Update all countdowns
+        function updateCountdowns() {
+            const now = new Date();
+
+            // Graduation countdown (full time)
+            const gradDiff = GRADUATION_DATE - now;
+            if (gradDiff > 0) {
+                const days = Math.floor(gradDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((gradDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((gradDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((gradDiff % (1000 * 60)) / 1000);
+
+                document.getElementById('graduation-countdown').innerHTML = `
+                    <div class="time-section">
+                        <span class="time-number">${days}</span>
+                        <span class="time-label">Days</span>
+                    </div>
+                    <div class="time-section">
+                        <span class="time-number">${hours}</span>
+                        <span class="time-label">Hours</span>
+                    </div>
+                    <div class="time-section">
+                        <span class="time-number">${minutes}</span>
+                        <span class="time-label">Minutes</span>
+                    </div>
+                    <div class="time-section">
+                        <span class="time-number">${seconds}</span>
+                        <span class="time-label">Seconds</span>
+                    </div>
+                `;
+            } else {
+                document.getElementById('graduation-countdown').innerHTML = '<div style="font-size: 2em;">🎉 GRADUATED! 🎉</div>';
+            }
+
+            // Class days remaining (excluding personal days)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const classDays = countSchoolDays(today, LAST_CLASS_DAY, true);
+            document.getElementById('class-days').textContent = Math.max(0, classDays);
+
+            // Building days remaining (excluding personal days)
+            const buildingDays = countSchoolDays(today, GRADUATION_DATE, true);
+            document.getElementById('building-days').textContent = Math.max(0, buildingDays);
+        }
+
+        // Initialize
+        displayExclusions();
+        updateCountdowns();
+        
+        // Update every second
+        setInterval(updateCountdowns, 1000);
+
+        // Set minimum date for date picker to today
+        document.getElementById('exclusion-date').min = new Date().toISOString().split('T')[0];
+        
+        // Allow Enter key to add exclusion
+        document.getElementById('exclusion-date').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addExclusion();
+            }
+        });
+
+        // Modal functions
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('settingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>
