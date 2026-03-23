@@ -570,7 +570,7 @@
             return exclusions.includes(dateStr);
         }
 
-        // Count school days between two dates (includes start date if it's before 3:55 PM on a school day)
+        // Count school days between two dates (includes start date only if before 3:55 PM on a school day)
         function countSchoolDays(startDate, endDate, includePersonalExclusions = false) {
             let count = 0;
             let current = new Date(startDate);
@@ -578,8 +578,22 @@
             
             const end = new Date(endDate);
             end.setHours(0, 0, 0, 0);
+            
+            const now = new Date();
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
 
             while (current <= end) {
+                // Check if this is today and we're past 3:55 PM
+                const isToday = current.getTime() === today.getTime();
+                const isPast355 = !isCurrentlyInSchoolDay();
+                
+                // Skip today if it's past 3:55 PM
+                if (isToday && isPast355) {
+                    current.setDate(current.getDate() + 1);
+                    continue;
+                }
+                
                 if (isWeekday(current) && 
                     !isSchoolHoliday(current) &&
                     (!includePersonalExclusions || !isPersonalExclusion(current))) {
